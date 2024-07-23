@@ -26,7 +26,7 @@ func main() {
 		StoreId:   "026000000600",
 		PosId:     "1",
 		CashierId: "1",
-		Amount:    5000000,
+		Amount:    2400000,
 	}
 
 	_, err := edc.Sale(tx)
