@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"runtime"
 
 	"github.com/transfashion/tfipos/edcmega"
@@ -29,6 +30,7 @@ func main() {
 		Amount:    2400000,
 	}
 
+	fmt.Println("Sales Transaction")
 	_, err := edc.Sale(tx)
 	if err != nil {
 		panic(err)

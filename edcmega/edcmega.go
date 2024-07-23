@@ -46,13 +46,37 @@ func New() *Edc {
 	}
 
 	keydata, _ := hex.DecodeString("61626364656667686162636465666768")
-
 	edc := &Edc{
 		Port: "/dev/ttyACM0",
 		Mode: mode,
 		Key:  keydata,
 	}
 	return edc
+}
+func (edc *Edc) SendData(b *[]byte) (ret *[]byte, err error) {
+	senddata := true
+	if senddata {
+		log.Println("Sending data...")
+		time.Sleep(3 * time.Second)
+
+		var dev serial.Port
+		dev, err = serial.Open(edc.Port, edc.Mode)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer dev.Close()
+
+		var n int
+		n, err = dev.Write(*b)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Sent %v bytes\n", n)
+		dev.Close()
+
+	}
+
+	return ret, err
 }
 
 func (edc *Edc) Sale(tx *SaleTransaction) (*SaleResponse, error) {
@@ -78,7 +102,7 @@ func (edc *Edc) Sale(tx *SaleTransaction) (*SaleResponse, error) {
 
 	arrdata = append(arrdata, []byte("00000000")...)
 
-	ed := Encrypt(arrdata, edc.Key)
+	ed := encrypt(arrdata, edc.Key)
 	ed = append([]byte{0, 80}, ed...)
 
 	_, err := edc.SendData(&ed)
@@ -107,7 +131,7 @@ func createTagData(tag Tag) ([]byte, error) {
 	return ret, nil
 }
 
-func Encrypt(data []byte, keydata []byte) []byte {
+func encrypt(data []byte, keydata []byte) []byte {
 	iv, _ := hex.DecodeString("00000000000000000000000000000000")
 
 	var plainTextBlock []byte
@@ -134,30 +158,4 @@ func Encrypt(data []byte, keydata []byte) []byte {
 	mode.CryptBlocks(ciphertext, plainTextBlock)
 
 	return ciphertext
-}
-
-func (edc *Edc) SendData(b *[]byte) (ret *[]byte, err error) {
-	senddata := true
-	if senddata {
-		log.Println("Sending data...")
-		time.Sleep(3 * time.Second)
-
-		var dev serial.Port
-		dev, err = serial.Open(edc.Port, edc.Mode)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer dev.Close()
-
-		var n int
-		n, err = dev.Write(*b)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Sent %v bytes\n", n)
-		dev.Close()
-
-	}
-
-	return ret, err
 }
